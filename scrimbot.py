@@ -1,4 +1,5 @@
-import discord, asyncio, pickle, time, datetime, os, csv, json, random, chatmodule, requests, pyttsx3, secrets, schedule, requests
+import discord, asyncio, pickle, time, datetime, os, csv, json, random, chatmodule, requests, secrets, schedule, requests
+import pyttsx3
 from discord.ext import commands
 from discord.utils import get
 #from discord.ext import tasks
@@ -113,8 +114,8 @@ async def unrole():
             await b.remove_roles(a)
             print(b.id)
 
-tts = pyttsx3.init()
-tts.setProperty('rate',180)
+#tts = pyttsx3.init()
+#tts.setProperty('rate',180)
 
 msgmem = {}
 currentcall = False
@@ -123,7 +124,7 @@ currentcall = False
 async def on_message(message):
     server = client.get_guild(767973379247833099)
     global msgmem
-    global tts
+    #global tts
     global currentcall
     if message.channel in msgmem:
         if not message.content.lower().startswith('&'):
@@ -145,22 +146,22 @@ async def on_message(message):
         general_id = 767973462978985995
         message_channel = client.get_channel(general_id)
         #await message_channel.send("I LIVED.")
-    if message.content.lower().startswith('&joinme'):
-        vc = message.author.voice.channel
-        currentcall = await vc.connect()
-        tts.save_to_file("Hello Everybody", 'greeting.mp3')
-        tts.runAndWait()
-        currentcall.play(discord.FFmpegPCMAudio('greeting.mp3'))
-    if message.content.lower().startswith('&say'):
-        if currentcall != False:
-            tts.save_to_file(message.content[4:], 'say.mp3')
-            tts.runAndWait()
-            currentcall.play(discord.FFmpegPCMAudio('say.mp3'))
-    if message.content.lower().startswith('&respond'):
-        if currentcall != False:
-            tts.save_to_file(chatmodule.msggen(message.content.lower() + "\n"), 'resp.mp3')
-            tts.runAndWait()
-            currentcall.play(discord.FFmpegPCMAudio('resp.mp3'))
+    #if message.content.lower().startswith('&joinme'):
+        #vc = message.author.voice.channel
+        #currentcall = await vc.connect()
+        #tts.save_to_file("Hello Everybody", 'greeting.mp3')
+        #tts.runAndWait()
+        #currentcall.play(discord.FFmpegPCMAudio('greeting.mp3'))
+    #if message.content.lower().startswith('&say'):
+        #if currentcall != False:
+            #tts.save_to_file(message.content[4:], 'say.mp3')
+            #tts.runAndWait()
+            #currentcall.play(discord.FFmpegPCMAudio('say.mp3'))
+    #if message.content.lower().startswith('&respond'):
+        #if currentcall != False:
+            #tts.save_to_file(chatmodule.msggen(message.content.lower() + "\n"), 'resp.mp3')
+            #tts.runAndWait()
+            #currentcall.play(discord.FFmpegPCMAudio('resp.mp3'))
     if message.content.lower().startswith('&unrole'):
         await unrole()
     if (message.content.lower().find(' blood ')+1) or (message.content.lower().find(' blood.')+1) or (message.content.lower().split()[-1] == "blood"):
