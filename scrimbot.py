@@ -308,7 +308,7 @@ gen_id = 770146648177115137
 @tasks.loop(hours=24)
 async def signuppost():
     today = datetime.date.today()
-    postdate = today + datetime.timedelta(days=6)
+    postdate = today + datetime.timedelta(days=0)
     signup_channel = client.get_channel(signup_id)
     await signup_channel.send(getday(0) + " " + "(" + postdate.strftime("%m/%d") + "): " + "http://www.scrimzone.co/signups.php?date=" + postdate.strftime("%Y-%m-%d") + "&name=")
     await unrole()
