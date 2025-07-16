@@ -1,7 +1,8 @@
 from win32 import win32api
-import discord, asyncio, pickle, time, datetime, os, csv, json, random, chatmodule, requests, pyttsx3, secrets
+import discord, asyncio, pickle, time, datetime, os, csv, json, random, chatmodule, requests, pyttsx3, secrets, nextcord, schedule, requests
 from discord.ext import tasks,commands
 from discord.utils import get
+from nextcord.ext import commands
 
 intents = discord.Intents.default()
 intents.members = True  # Subscribe to the privileged members intent.
@@ -328,7 +329,10 @@ async def before():
     print("")
     print("Finished waiting, starting link process...")
 
+def update():
+	response = requests.get('http://scrimzone.co/update.php')
 
+schedule.every(5).minutes.do(update)
 
 
 client.run(secrets.token)
