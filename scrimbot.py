@@ -1,4 +1,4 @@
-import discord, asyncio, pickle, time, datetime, os, csv, json, random, chatmodule, requests, pyttsx3, secrets, nextcord, schedule, requests
+import discord, asyncio, pickle, time, datetime, os, csv, json, random, chatmodule, requests, pyttsx3, secrets, schedule, requests
 from discord.ext import tasks,commands
 from discord.utils import get
 from nextcord.ext import commands
@@ -327,11 +327,5 @@ async def before():
         num += 1
     print("")
     print("Finished waiting, starting link process...")
-
-def update():
-	response = requests.get('http://scrimzone.co/update.php')
-
-schedule.every(5).minutes.do(update)
-
 
 client.run(secrets.token)
