@@ -1,4 +1,3 @@
-from win32 import win32api
 import discord, asyncio, pickle, time, datetime, os, csv, json, random, chatmodule, requests, pyttsx3, secrets, nextcord, schedule, requests
 from discord.ext import tasks,commands
 from discord.utils import get
