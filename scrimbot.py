@@ -1,6 +1,7 @@
 import discord, asyncio, pickle, time, datetime, os, csv, json, random, chatmodule, requests, pyttsx3, secrets, schedule, requests
-from discord.ext import tasks,commands
+from discord.ext import commands
 from discord.utils import get
+#from discord.ext import tasks
 
 intents = discord.Intents.default()
 intents.members = True  # Subscribe to the privileged members intent.
@@ -303,28 +304,28 @@ announce_id = 767973462978985995
 cancel_id = 780732404720467998
 signup_id = 780732404720467998
 gen_id = 770146648177115137
-@tasks.loop(hours=24)
-async def signuppost():
-    today = datetime.date.today()
-    postdate = today + datetime.timedelta(days=0)
-    signup_channel = client.get_channel(signup_id)
-    await signup_channel.send(getday(0) + " " + "(" + postdate.strftime("%m/%d") + "): " + "http://www.scrimzone.co/signups.php?date=" + postdate.strftime("%Y-%m-%d") + "&name=")
-    await unrole()
+#@tasks.loop(hours=24)
+#async def signuppost():
+#    today = datetime.date.today()
+#    postdate = today + datetime.timedelta(days=0)
+#    signup_channel = client.get_channel(signup_id)
+#    await signup_channel.send(getday(0) + " " + "(" + postdate.strftime("%m/%d") + "): " + "http://www.scrimzone.co/signups.php?date=" + postdate.strftime("%Y-%m-%d") + "&name=")
+#    await unrole()
 
 
-@signuppost.before_loop
-async def before():
-    print("Preparing Today's Signup Link Process....")
-    now = datetime.datetime.now()
-    await asyncio.sleep(12)
-    num = 0
-    posttime = 6
-    while (now.hour != posttime) or now.minute > 5:
-        now = datetime.datetime.now()
-        await asyncio.sleep(5)
-        print("waiting",now.hour,now.minute,end="\r")
-        num += 1
-    print("")
-    print("Finished waiting, starting link process...")
+#@signuppost.before_loop
+#async def before():
+#    print("Preparing Today's Signup Link Process....")
+#    now = datetime.datetime.now()
+#    await asyncio.sleep(12)
+#    num = 0
+#    posttime = 6
+#    while (now.hour != posttime) or now.minute > 5:
+#        now = datetime.datetime.now()
+#        await asyncio.sleep(5)
+#        print("waiting",now.hour,now.minute,end="\r")
+#        num += 1
+#    print("")
+#    print("Finished waiting, starting link process...")
 
 client.run(secrets.token)
