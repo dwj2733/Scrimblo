@@ -1,7 +1,6 @@
 import discord, asyncio, pickle, time, datetime, os, csv, json, random, chatmodule, requests, pyttsx3, secrets, schedule, requests
 from discord.ext import tasks,commands
 from discord.utils import get
-from nextcord.ext import commands
 
 intents = discord.Intents.default()
 intents.members = True  # Subscribe to the privileged members intent.
