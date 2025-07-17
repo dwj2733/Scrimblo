@@ -1,4 +1,4 @@
-import discord, asyncio, pickle, time, datetime, os, csv, json, random, chatmodule, requests, secrets, schedule, requests
+import discord, asyncio, pickle, time, datetime, os, csv, json, random, chatmodule, requests, mysecrets, schedule, requests
 import pyttsx3
 from discord.ext import commands
 from discord.utils import get
@@ -329,4 +329,4 @@ gen_id = 770146648177115137
 #    print("")
 #    print("Finished waiting, starting link process...")
 
-client.run(secrets.token)
+client.run(mysecrets.token)
