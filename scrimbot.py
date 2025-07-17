@@ -23,6 +23,14 @@ def load():
         print("players.txt does not exist! Does it not exist?")
         players = dict()
 
+def update():
+    requests.get('http://scrimzone.co/update.php')
+    print("Updated")
+
+async def updateLoop():
+    schedule.run_pending()
+    time.sleep(1)
+
 def within24h(day):
     weekdays = ["monday","tuesday","wednesday","thursday","friday","saturday","sunday"]
     if day in weekdays:
@@ -80,6 +88,7 @@ async def on_ready():
     ramble_id = 1054874073659879475
     ramble_channel = client.get_channel(ramble_id)
     #await ramble_channel.send("Good morning")
+    updateLoop()
     lastmsg = ""
     # signuppost.start()
     while True:
@@ -328,5 +337,7 @@ gen_id = 770146648177115137
 #        num += 1
 #    print("")
 #    print("Finished waiting, starting link process...")
+
+schedule.every(5).minutes.do(update)
 
 client.run(mysecrets.token)
