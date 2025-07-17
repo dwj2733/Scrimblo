@@ -23,10 +23,6 @@ def load():
         print("players.txt does not exist! Does it not exist?")
         players = dict()
 
-def update():
-    requests.get('http://scrimzone.co/update.php')
-    print("Updated")
-
 def within24h(day):
     weekdays = ["monday","tuesday","wednesday","thursday","friday","saturday","sunday"]
     if day in weekdays:
@@ -83,7 +79,6 @@ async def on_ready():
     print('The bot has logged in as {0.user}'.format(client))
     ramble_id = 1054874073659879475
     ramble_channel = client.get_channel(ramble_id)
-    schedule.every(5).minutes.do(update)
     #await ramble_channel.send("Good morning")
     lastmsg = ""
     # signuppost.start()
