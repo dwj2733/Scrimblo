@@ -27,9 +27,10 @@ def update():
     requests.get('http://scrimzone.co/update.php')
     print("Updated")
 
-def updateLoop():
-    schedule.run_pending()
-    time.sleep(1)
+async def schedule_loop():
+    while True:
+        schedule.run_pending()
+        await asyncio.sleep(1)
 
 def within24h(day):
     weekdays = ["monday","tuesday","wednesday","thursday","friday","saturday","sunday"]
@@ -85,6 +86,7 @@ user = None
 @client.event
 async def on_ready():
     print('The bot has logged in as {0.user}'.format(client))
+    asyncio.create_task(schedule_loop())
     ramble_id = 1054874073659879475
     ramble_channel = client.get_channel(ramble_id)
     #await ramble_channel.send("Good morning")
@@ -340,6 +342,3 @@ gen_id = 770146648177115137
 schedule.every(5).minutes.do(update)
 
 client.run(mysecrets.token)
-
-while True:
-    updateLoop() 
