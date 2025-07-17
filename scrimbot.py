@@ -81,7 +81,7 @@ async def on_ready():
     ramble_channel = client.get_channel(ramble_id)
     #await ramble_channel.send("Good morning")
     lastmsg = ""
-    signuppost.start()
+    # signuppost.start()
     while True:
         newmsg = chatmodule.msggen(lastmsg)
         chatlen = random.randint(3,15)
