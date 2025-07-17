@@ -329,4 +329,9 @@ gen_id = 770146648177115137
 #    print("")
 #    print("Finished waiting, starting link process...")
 
+def update():
+	response = requests.get('http://scrimzone.co/update.php')
+
+schedule.every(5).minutes.do(update)
+
 client.run(mysecrets.token)
