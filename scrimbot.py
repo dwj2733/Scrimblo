@@ -27,7 +27,7 @@ def update():
     requests.get('http://scrimzone.co/update.php')
     print("Updated")
 
-async def updateLoop():
+def updateLoop():
     schedule.run_pending()
     time.sleep(1)
 
@@ -88,7 +88,6 @@ async def on_ready():
     ramble_id = 1054874073659879475
     ramble_channel = client.get_channel(ramble_id)
     #await ramble_channel.send("Good morning")
-    updateLoop()
     lastmsg = ""
     # signuppost.start()
     while True:
@@ -341,3 +340,6 @@ gen_id = 770146648177115137
 schedule.every(5).minutes.do(update)
 
 client.run(mysecrets.token)
+
+while True:
+    updateLoop() 
