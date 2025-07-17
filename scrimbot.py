@@ -32,6 +32,24 @@ async def schedule_loop():
         schedule.run_pending()
         await asyncio.sleep(1)
 
+async def ramble_loop():
+    await client.wait_until_ready()
+    ramble_id = 1054874073659879475
+    ramble_channel = client.get_channel(ramble_id)
+    lastmsg = ""
+
+    while not client.is_closed():
+        newmsg = chatmodule.msggen(lastmsg)
+        chatlen = random.randint(3, 15)
+        if random.randint(1, 3) == 1:
+            lastmsg = ""
+            chatlen = 25
+        while len(newmsg) < chatlen:
+            newmsg = chatmodule.msggen(lastmsg)
+        await ramble_channel.send(newmsg)
+        lastmsg = newmsg
+        await asyncio.sleep(1800)
+
 def within24h(day):
     weekdays = ["monday","tuesday","wednesday","thursday","friday","saturday","sunday"]
     if day in weekdays:
@@ -87,23 +105,7 @@ user = None
 async def on_ready():
     print('The bot has logged in as {0.user}'.format(client))
     asyncio.create_task(schedule_loop())
-    ramble_id = 1054874073659879475
-    ramble_channel = client.get_channel(ramble_id)
-    #await ramble_channel.send("Good morning")
-    lastmsg = ""
-    # signuppost.start()
-    while True:
-        newmsg = chatmodule.msggen(lastmsg)
-        chatlen = random.randint(3,15)
-        if random.randint(1,3) == 1:
-            lastmsg = ""
-            chatlen = 25
-        while len(newmsg) < chatlen:
-            newmsg = chatmodule.msggen(lastmsg)
-        await ramble_channel.send(newmsg)
-        lastmsg = newmsg
-        await asyncio.sleep(1800)
-
+    asyncio.create_task(ramble_loop())
 
 async def unrole():
     server = client.get_guild(767973379247833099)
