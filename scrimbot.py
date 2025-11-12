@@ -50,6 +50,10 @@ async def ramble_loop():
         lastmsg = newmsg
         await asyncio.sleep(1800)
 
+async def update_loop():
+    requests.get('http://scrimzone.co/update.php')
+    await asyncio.sleep(300)
+
 def within24h(day):
     weekdays = ["monday","tuesday","wednesday","thursday","friday","saturday","sunday"]
     if day in weekdays:
@@ -106,6 +110,7 @@ async def on_ready():
     print('The bot has logged in as {0.user}'.format(client))
     asyncio.create_task(schedule_loop())
     asyncio.create_task(ramble_loop())
+    asyncio.create_task(update_loop())
 
 async def unrole():
     server = client.get_guild(767973379247833099)
@@ -340,7 +345,5 @@ gen_id = 770146648177115137
 #        num += 1
 #    print("")
 #    print("Finished waiting, starting link process...")
-
-schedule.every(5).minutes.do(update)
 
 client.run(mysecrets.token)
