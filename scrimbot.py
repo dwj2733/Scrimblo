@@ -51,8 +51,9 @@ async def ramble_loop():
         await asyncio.sleep(1800)
 
 async def update_loop():
-    requests.get('http://scrimzone.co/update.php')
-    await asyncio.sleep(300)
+    while True:
+        requests.get('http://scrimzone.co/update.php')
+        await asyncio.sleep(300)
 
 def within24h(day):
     weekdays = ["monday","tuesday","wednesday","thursday","friday","saturday","sunday"]
