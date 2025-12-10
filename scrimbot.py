@@ -311,6 +311,7 @@ async def on_message(message):
 
                     x = requests.post(url, data = myobj)
                     await message.channel.send("Signed up " + nickname + " for " + signtype + " signups for " + signdate + ".")
+                    return 
                 else:
                     await message.channel.send("ERROR: Invalid Type. Please enter one of the following: " + signup_times + ".")
                     return      
@@ -339,7 +340,7 @@ async def on_message(message):
             else:
                 await message.channel.send("ERROR: Invalid day. Please enter today/tomorrow or weekday name.")
                 return
-            if message.content.split() > 2:
+            if len(message.content.split()) > 2:
                 signtype = message.content.split()[2].lower()
                 if signtype in signup_types:
                     url = 'http://scrimzone.co/signuprequests.php'
@@ -347,6 +348,7 @@ async def on_message(message):
 
                     x = requests.post(url, data = myobj)
                     await message.channel.send("Removed " + signtype + " signup of " + nickname + " for " + signdate + ".")
+                    return 
                 else:
                     await message.channel.send("ERROR: Invalid Type. Please enter one of the following: " + signup_times + ".")
                     return     
