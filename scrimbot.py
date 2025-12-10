@@ -218,8 +218,13 @@ async def on_message(message):
             #currentcall.play(discord.FFmpegPCMAudio('resp.mp3'))
     if message.content.lower().startswith('&unrole'):
         await unrole()
-    if (message.content.lower().find(' blood ')+1) or (message.content.lower().find(' blood.')+1) or (message.content.lower().split()[-1] == "blood"):
-        await message.channel.send("Your blood volume is very healthy. The blood volume opposite you is very unhealthy.\nWhy did you abandon your teammates?")
+    words = message.content.lower().replace(".", "").replace(",", "").split()
+
+    if "blood" in words:
+        await message.channel.send(
+            "Your blood volume is very healthy. The blood volume opposite you is very unhealthy.\n"
+            "Why did you abandon your teammates?"
+        )
 #    if message.content.lower().startswith('&moralleaderboard'):
 #        random.seed((datetime.datetime.utcnow() - datetime.datetime(1970,1,1)).days)
 #        name_list = ["Adam", "AJ", "Ali", "An", "Anna", "Azzy", "Ben", "Blake", "Cam", "Casino", "Chimi", "Cece", "Curtis", "Cylako", "Cyrus", "Daev", "Dan", "Danny", "Steve", "Dean", "Diana", "Dominic", "Domonic", "Douglass", "Drago", "Dukky", "Eden", "Erik O.", "Erik Y.", "Ezra", "Garrett", "Garrett H.", "Guld", "Heelie", "Honan", "Hongbaabaa", "J4ke", "Jackson", "Jacob", "Jake", "Jar", "Joel", "Joey", "Jonah", "Kathy", "Leila", "Logan", "Michael", "Mimi", "Noam", "Peter", "Russ", "Sam", "Sam S.", "Sand", "Sean", "Stanley", "Valor", "Will", "Yaveed", "Alana", "Faith", "Evi", "Solari", "Hidiri", "Sarvaris", "Avery", "Gruer"]
@@ -297,7 +302,7 @@ async def on_message(message):
             else:
                 await message.channel.send("ERROR: Invalid day. Please enter today/tomorrow or weekday name.")
                 return
-            if message.content.split() > 2:
+            if len(message.content.split()) > 2:
                 signtype = message.content.split()[2].lower()
                 if signtype in signup_types:
                     url = 'http://scrimzone.co/signuprequests.php'
