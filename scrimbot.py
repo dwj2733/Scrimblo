@@ -75,6 +75,7 @@ async def signup_check_loop():
             count = response.split(",")[0]
 
             num_signup_games = (count // 10)
+            print(num_signup_games + " signup is ready for " + event)
 
             if num_signup_games >= 1 and num_signup_games > last_signups[event]:
                 channel = client.get_channel(780732404720467998)
