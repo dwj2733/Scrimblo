@@ -12,7 +12,7 @@ signup_times = {"normal": "7:55pm Eastern",
                 "late": "10:55 Eastern",
                 "tft": "8:55 Eastern",
                 "silly": "7:55pm Eastern"}
-last_day = 0
+last_day = datetime.now().strftime("%Y-%m-%d")
 players = dict()
 
 def save():
@@ -64,7 +64,7 @@ async def signup_check_loop():
     await client.wait_until_ready()
 
     while not client.is_closed():
-        today = (datetime.datetime.utcnow() - datetime.timedelta(hours=8)).strftime("%Y-%m-%d")
+        today = datetime.now().strftime("%Y-%m-%d")
         if(today != last_day):
             last_day = today
             last_signups = {signup_type: 0 for signup_type in signup_types}
