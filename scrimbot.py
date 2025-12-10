@@ -2,12 +2,17 @@ import discord, asyncio, pickle, time, datetime, os, csv, json, random, chatmodu
 import pyttsx3
 from discord.ext import commands
 from discord.utils import get
-#from discord.ext import tasks
 
 intents = discord.Intents.default()
 intents.members = True  # Subscribe to the privileged members intent.
 bot = commands.Bot(command_prefix='!', intents=intents)
-
+signup_types = ["Normal", "Late", "TFT", "Silly"]
+last_signups = {signup_type: 0 for signup_type in signup_types}
+signup_times = {"Normal": "7:55pm Eastern",
+                "Late": "10:55 Eastern",
+                "TFT": "8:55 Eastern",
+                "Silly": "7:55pm Eastern"}
+last_day = 0
 players = dict()
 
 def save():
@@ -54,6 +59,44 @@ async def update_loop():
     while True:
         requests.get('http://scrimzone.co/update.php')
         await asyncio.sleep(300)
+
+async def fetch_count(event):
+    url = f"http://scrimzone.co/signuprequests.php?date={today}&type={event}"
+
+    async with requests.get(url) as resp:
+        text = await resp.text()
+        return text.split(",")[0]
+
+async def signup_check_loop():
+    await client.wait_until_ready()
+
+    while not client.is_closed():
+        today = (datetime.datetime.utcnow() - datetime.timedelta(hours=8)).strftime("%Y-%m-%d")
+        if(today != last_day):
+            last_day = today
+            last_signups = {signup_type: 0 for signup_type in signup_types}
+
+        for event in signup_types:
+            url = f"http://scrimzone.co/signuprequests.php?date={today}&type={event}"
+            response = await requests.get(url)
+            count = response.split(",")[0]
+
+            num_signup_games = (count // 10)
+
+            if num_signup_games >= 1 and num_signup_games > last_signups[event]:
+                channel = client.get_channel(780732404720467998)
+
+                message_text = ""
+
+                for i in range(num_signup_games * 10 - 9, num_signup_games * 10 + 1):
+                    message_text += get_user_mention(response.split(",")[i].strip()) + " "
+
+                message_text += " You are the first 10 to signup for " + event  + " Scrims today! Please be in lobby at " + signup_types[event]
+
+                await channel.send(message_text)
+
+                last_signups[event] = num_signup_games
+        await asyncio.sleep(1800)
 
 def within24h(day):
     weekdays = ["monday","tuesday","wednesday","thursday","friday","saturday","sunday"]
@@ -296,10 +339,7 @@ async def on_message(message):
     if message.content.lower().startswith('&welcome') and (message.author in discord.utils.get(server.roles, name='Admins').members):
         if len(message.content.split()) > 1:
             gen_channel = client.get_channel(gen_id)
-            welcomeuser = 0
-            for w in discord.utils.get(server.roles, name='Registered').members:
-                if w.nick == " ".join(message.content.split()[1:]):
-                    welcomeuser = w
+            welcomeuser = get_user_mention(" ".join(message.content.split()[1:]))
             if welcomeuser != 0:
                 signup_channel = client.get_channel(780732404720467998)
                 info_channel = client.get_channel(768195174014124033)
@@ -318,6 +358,13 @@ async def on_message(message):
     if not isinstance(message.channel, discord.DMChannel) and (random.randint(1,100) <= 1):
         await message.channel.send(chatmodule.msggen("\n".join(msgmem[message.channel]) + "\n"))
     print(random.randint(1,100))
+
+def get_user_mention(name):
+    server = client.get_guild(767973379247833099)
+    for w in discord.utils.get(server.roles, name='Registered').members:
+        if w.nick == name:
+            welcomeuser = w
+
 
 announce_id = 767973462978985995
 cancel_id = 780732404720467998
