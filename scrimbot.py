@@ -6,12 +6,12 @@ from discord.utils import get
 intents = discord.Intents.default()
 intents.members = True  # Subscribe to the privileged members intent.
 bot = commands.Bot(command_prefix='!', intents=intents)
-signup_types = ["Normal", "Late", "TFT", "Silly"]
+signup_types = ["normal", "late", "tft", "silly"]
 last_signups = {signup_type: 0 for signup_type in signup_types}
-signup_times = {"Normal": "7:55pm Eastern",
-                "Late": "10:55 Eastern",
-                "TFT": "8:55 Eastern",
-                "Silly": "7:55pm Eastern"}
+signup_times = {"normal": "7:55pm Eastern",
+                "late": "10:55 Eastern",
+                "tft": "8:55 Eastern",
+                "silly": "7:55pm Eastern"}
 last_day = 0
 players = dict()
 
@@ -59,13 +59,6 @@ async def update_loop():
     while True:
         requests.get('http://scrimzone.co/update.php')
         await asyncio.sleep(300)
-
-async def fetch_count(event):
-    url = f"http://scrimzone.co/signuprequests.php?date={today}&type={event}"
-
-    async with requests.get(url) as resp:
-        text = await resp.text()
-        return text.split(",")[0]
 
 async def signup_check_loop():
     await client.wait_until_ready()
@@ -304,8 +297,19 @@ async def on_message(message):
             else:
                 await message.channel.send("ERROR: Invalid day. Please enter today/tomorrow or weekday name.")
                 return
+            if message.content.split() > 2:
+                signtype = message.content.split()[2].lower()
+                if signtype in signup_types:
+                    url = 'http://scrimzone.co/signuprequests.php'
+                    myobj = {'name': nickname, 'date': signdate, 'type': signtype}
 
-            url = 'http://scrimzone.co/signups.php'
+                    x = requests.post(url, data = myobj)
+                    await message.channel.send("Signed up " + nickname + " for " + signtype + " signups for " + signdate + ".")
+                else:
+                    await message.channel.send("ERROR: Invalid Type. Please enter one of the following: " + signup_times + ".")
+                    return      
+
+            url = 'http://scrimzone.co/signuprequests.php'
             myobj = {'name': nickname, 'date': signdate}
 
             x = requests.post(url, data = myobj)
@@ -329,8 +333,19 @@ async def on_message(message):
             else:
                 await message.channel.send("ERROR: Invalid day. Please enter today/tomorrow or weekday name.")
                 return
+            if message.content.split() > 2:
+                signtype = message.content.split()[2].lower()
+                if signtype in signup_types:
+                    url = 'http://scrimzone.co/signuprequests.php'
+                    myobj = {'deleteSignup': 'd3l3t3', 'name': nickname, 'date': signdate, 'type': signtype}
 
-            url = 'http://scrimzone.co/signups.php'
+                    x = requests.post(url, data = myobj)
+                    await message.channel.send("Removed " + signtype + " signup of " + nickname + " for " + signdate + ".")
+                else:
+                    await message.channel.send("ERROR: Invalid Type. Please enter one of the following: " + signup_times + ".")
+                    return     
+
+            url = 'http://scrimzone.co/signuprequests.php'
             myobj = {'deleteSignup': 'd3l3t3', 'name': nickname, 'date': signdate}
 
             x = requests.post(url, data = myobj)
