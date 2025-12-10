@@ -1,4 +1,5 @@
-import discord, asyncio, pickle, time, datetime, os, csv, json, random, chatmodule, requests, mysecrets, schedule, requests
+import discord, asyncio, pickle, time, os, csv, json, random, chatmodule, requests, mysecrets, schedule, requests
+from datetime import datetime
 import pyttsx3
 from discord.ext import commands
 from discord.utils import get
