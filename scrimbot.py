@@ -1,4 +1,5 @@
-import discord, asyncio, pickle, time, os, csv, json, datetime, random, chatmodule, requests, mysecrets, schedule, requests
+import discord, asyncio, pickle, time, os, csv, json, random, chatmodule, requests, mysecrets, schedule, requests, datetime
+from datetime import timedelta
 import pyttsx3
 from discord.ext import commands
 from discord.utils import get
@@ -93,6 +94,24 @@ async def signup_check_loop():
 
                 last_signups[event] = num_signup_games
         await asyncio.sleep(1800)
+
+async def unrole_loop():
+    await wait_until(3)
+    while not client.is_closed():
+        await unrole()
+        await asyncio.sleep(86400)
+
+async def wait_until(hour: int, minute: int = 0, second: int = 0):
+    now = datetime.now()
+    target = now.replace(hour=hour, minute=minute, second=second, microsecond=0)
+
+    # If target time already passed today, schedule for tomorrow
+    if target <= now:
+        target += timedelta(days=1)
+
+    # Seconds until target time
+    wait_seconds = (target - now).total_seconds()
+    await asyncio.sleep(wait_seconds)
 
 def within24h(day):
     weekdays = ["monday","tuesday","wednesday","thursday","friday","saturday","sunday"]
