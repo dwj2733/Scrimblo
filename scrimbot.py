@@ -74,7 +74,10 @@ async def signup_check_loop():
             response = await requests.get(url)
             count = response.split(",")[0]
 
-            num_signup_games = (count // 10)
+            if(event == 'tft'):
+                num_signup_games = (count // 8)
+            else:
+                num_signup_games = (count // 10)
 
             if num_signup_games >= 1 and num_signup_games > last_signups[event]:
                 channel = client.get_channel(780732404720467998)
@@ -313,7 +316,7 @@ async def on_message(message):
                     await message.channel.send("Signed up " + nickname + " for " + signtype + " signups for " + signdate + ".")
                     return 
                 else:
-                    await message.channel.send("ERROR: Invalid Type. Please enter one of the following: " + signup_times + ".")
+                    await message.channel.send("ERROR: Invalid Type. Please enter one of the following: " + ', '.join(signup_types) + ".")
                     return      
 
             url = 'http://scrimzone.co/signuprequests.php'
@@ -350,7 +353,7 @@ async def on_message(message):
                     await message.channel.send("Removed " + signtype + " signup of " + nickname + " for " + signdate + ".")
                     return 
                 else:
-                    await message.channel.send("ERROR: Invalid Type. Please enter one of the following: " + signup_times + ".")
+                    await message.channel.send("ERROR: Invalid Type. Please enter one of the following: " + ', '.join(signup_types) + ".")
                     return     
 
             url = 'http://scrimzone.co/signuprequests.php'
