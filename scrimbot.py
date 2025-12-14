@@ -6,7 +6,7 @@ from discord.utils import get
 
 intents = discord.Intents.default()
 intents.members = True  # Subscribe to the privileged members intent.
-bot = commands.Bot(command_prefix='!', intents=intents)
+#bot = commands.Bot(command_prefix='!', intents=intents)
 signup_types = ["normal", "late", "tft", "silly"]
 last_signups = {signup_type: 0 for signup_type in signup_types}
 signup_times = {"normal": "7:55pm Eastern",
@@ -33,11 +33,6 @@ def update():
     requests.get('http://scrimzone.co/update.php')
     print("Updated")
 
-async def schedule_loop():
-    while True:
-        schedule.run_pending()
-        await asyncio.sleep(1)
-
 async def ramble_loop():
     await client.wait_until_ready()
     ramble_id = 1054874073659879475
@@ -58,41 +53,53 @@ async def ramble_loop():
 
 async def update_loop():
     while True:
-        requests.get('http://scrimzone.co/update.php')
+        try:
+            requests.get('http://scrimzone.co/update.php')
+        except Exception as e:
+            print("update_loop crashed:", e)
         await asyncio.sleep(300)
 
 async def signup_check_loop():
     await client.wait_until_ready()
 
+    global last_day, last_signups
+
     while not client.is_closed():
-        today = datetime.datetime.now().strftime("%Y-%m-%d")
-        if(today != last_day):
-            last_day = today
-            last_signups = {signup_type: 0 for signup_type in signup_types}
+        try:
+            today = datetime.datetime.now().strftime("%Y-%m-%d")
+            if(today != last_day):
+                last_day = today
+                last_signups = {signup_type: 0 for signup_type in signup_types}
 
-        for event in signup_types:
-            url = f"http://scrimzone.co/signuprequests.php?date={today}&type={event}"
-            response = await requests.get(url)
-            count = response.split(",")[0]
+            for event in signup_types:
+                url = f"http://scrimzone.co/signuprequests.php?date={today}&type={event}"
+                response = requests.get(url).text
+                count = int(response.split(",")[0])
 
-            if(event == 'tft'):
-                num_signup_games = (count // 8)
-            else:
-                num_signup_games = (count // 10)
+                group_size = 8 if event == "tft" else 10
+                start = num_signup_games * group_size - (group_size - 1)
+                end = num_signup_games * group_size + 1
 
-            if num_signup_games >= 1 and num_signup_games > last_signups[event]:
-                channel = client.get_channel(780732404720467998)
+                if(event == 'tft'):
+                    num_signup_games = (count // group_size)
+                else:
+                    num_signup_games = (count // group_size)
 
-                message_text = ""
+                if num_signup_games >= 1 and num_signup_games > last_signups[event]:
+                    channel = client.get_channel(780732404720467998)
 
-                for i in range(num_signup_games * 10 - 9, num_signup_games * 10 + 1):
-                    message_text += get_user_mention(response.split(",")[i].strip()) + " "
+                    message_text = ""
 
-                message_text += " You are the first 10 to signup for " + event  + " Scrims today! Please be in lobby at " + signup_types[event]
+                    for i in range(start, end):
+                        message_text += get_user_mention(response.split(",")[i].strip()) + " "
 
-                await channel.send(message_text)
+                    message_text += " You are the first 10 to signup for " + event  + " Scrims today! Please be in lobby at " + signup_times[event]
 
-                last_signups[event] = num_signup_games
+                    await channel.send(message_text)
+
+                    last_signups[event] = num_signup_games
+        except Exception as e:
+            print("update_loop crashed:", e)
         await asyncio.sleep(1800)
 
 async def unrole_loop():
@@ -102,7 +109,7 @@ async def unrole_loop():
         await asyncio.sleep(86400)
 
 async def wait_until(hour: int, minute: int = 0, second: int = 0):
-    now = datetime.now()
+    now = datetime.datetime.now()
     target = now.replace(hour=hour, minute=minute, second=second, microsecond=0)
 
     # If target time already passed today, schedule for tomorrow
@@ -167,10 +174,10 @@ user = None
 @client.event
 async def on_ready():
     print('The bot has logged in as {0.user}'.format(client))
-    asyncio.create_task(schedule_loop())
     asyncio.create_task(ramble_loop())
     asyncio.create_task(update_loop())
     asyncio.create_task(signup_check_loop())
+    asyncio.create_task(unrole_loop())
 
 async def unrole():
     server = client.get_guild(767973379247833099)
@@ -186,7 +193,8 @@ async def unrole():
     spectate = discord.utils.get(server.roles, name='Spectators')
     roles = [green,purple,pink,yellow,aqua,beige,magenta,olive,spectate]
     for a in roles:
-        print(a)
+        if a is None:
+            continue
         for b in a.members:
             await b.remove_roles(a)
             print(b.id)
@@ -345,11 +353,12 @@ async def on_message(message):
             await message.channel.send("Signed up " + nickname + " for " + signdate + ".")
     if message.content.lower().startswith('&signuplist'):
         if len(message.content.split()) == 1:
+            signdate = datetime.date.today().strftime("%Y-%m-%d")
             url = 'http://scrimzone.co/signuprequests.php'
             myobj = {'date': signdate}
 
-            x = await requests.post(url, data = myobj)
-            await message.channel.send(x.response)
+            x = requests.post(url, data = myobj)
+            await message.channel.send(x.text)
         else:
             if message.content.split()[1].lower() == "today":
                 signdate = datetime.date.today().strftime("%Y-%m-%d")
@@ -366,8 +375,8 @@ async def on_message(message):
                     url = 'http://scrimzone.co/signuprequests.php'
                     myobj = {'date': signdate, 'type': signtype}
 
-                    x = await requests.post(url, data = myobj)
-                    await message.channel.send(x.response)
+                    x = requests.post(url, data = myobj)
+                    await message.channel.send(x.text)
                     return 
                 else:
                     await message.channel.send("ERROR: Invalid Type. Please enter one of the following: " + ', '.join(signup_types) + ".")
@@ -377,7 +386,7 @@ async def on_message(message):
             myobj = {'date': signdate}
 
             x = requests.post(url, data = myobj)
-            await message.channel.send(x.response)
+            await message.channel.send(x.text)
     if message.content.lower().startswith('&unsignup'):
         nickname = message.author.nick
         if nickname == None:
@@ -443,8 +452,8 @@ def get_user_mention(name):
     server = client.get_guild(767973379247833099)
     for w in discord.utils.get(server.roles, name='Registered').members:
         if w.nick == name:
-            welcomeuser = w
-
+            return w.mention
+    return name
 
 announce_id = 767973462978985995
 cancel_id = 780732404720467998
