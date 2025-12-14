@@ -343,6 +343,41 @@ async def on_message(message):
 
             x = requests.post(url, data = myobj)
             await message.channel.send("Signed up " + nickname + " for " + signdate + ".")
+    if message.content.lower().startswith('&signuplist'):
+        if len(message.content.split()) == 1:
+            url = 'http://scrimzone.co/signuprequests.php'
+            myobj = {'date': signdate}
+
+            x = await requests.post(url, data = myobj)
+            await message.channel.send(x.response)
+        else:
+            if message.content.split()[1].lower() == "today":
+                signdate = datetime.date.today().strftime("%Y-%m-%d")
+            elif message.content.split()[1].lower() == "tomorrow":
+                signdate = (datetime.date.today() + datetime.timedelta(days=1)).strftime("%Y-%m-%d")
+            elif message.content.split()[1].lower() in ["monday","tuesday","wednesday","thursday","friday","saturday","sunday"]:
+                signdate = (datetime.date.today() + datetime.timedelta(days=daysuntil(message.content.split()[1].lower()))).strftime("%Y-%m-%d")
+            else:
+                await message.channel.send("ERROR: Invalid day. Please enter today/tomorrow or weekday name.")
+                return
+            if len(message.content.split()) > 2:
+                signtype = message.content.split()[2].lower()
+                if signtype in signup_types:
+                    url = 'http://scrimzone.co/signuprequests.php'
+                    myobj = {'date': signdate, 'type': signtype}
+
+                    x = await requests.post(url, data = myobj)
+                    await message.channel.send(x.response)
+                    return 
+                else:
+                    await message.channel.send("ERROR: Invalid Type. Please enter one of the following: " + ', '.join(signup_types) + ".")
+                    return      
+
+            url = 'http://scrimzone.co/signuprequests.php'
+            myobj = {'date': signdate}
+
+            x = requests.post(url, data = myobj)
+            await message.channel.send(x.response)
     if message.content.lower().startswith('&unsignup'):
         nickname = message.author.nick
         if nickname == None:
