@@ -428,11 +428,11 @@ async def on_message(message):
     if message.content.lower().startswith('&welcome') and (message.author in discord.utils.get(server.roles, name='Admins').members):
         if len(message.content.split()) > 1:
             gen_channel = client.get_channel(gen_id)
-            welcomeuser = get_user_mention(" ".join(message.content.split()[1:]))
-            if welcomeuser != 0:
+            welcomemention = get_user_mention(" ".join(message.content.split()[1:]))
+            if welcomemention != 0:
                 signup_channel = client.get_channel(780732404720467998)
                 info_channel = client.get_channel(768195174014124033)
-                await gen_channel.send("Welcome " + welcomeuser.mention + "! You have been registered to the website and can now use the " + signup_channel.mention + " and " + info_channel.mention + " channels. Please reach out to any admin (orange names) or DM " + discord.utils.get(server.roles, name='Scrim Bot').members[0].mention + " if you have any questions! Also be sure to familiarize yourself with the ⁠rules and the website: http://scrimzone.co/")
+                await gen_channel.send("Welcome " + welcomemention + "! You have been registered to the website and can now use the " + signup_channel.mention + " and " + info_channel.mention + " channels. Please reach out to any admin (orange names) or DM " + discord.utils.get(server.roles, name='Scrim Bot').members[0].mention + " if you have any questions! Also be sure to familiarize yourself with the ⁠rules and the website: http://scrimzone.co/")
             else:
                 await message.channel.send("ERROR: Registered user " + " ".join(message.content.split()[1:]) + " does not exist.")
         else:
