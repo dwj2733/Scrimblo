@@ -314,7 +314,7 @@ async def on_message(message):
             await message.channel.send("Your roles are now updated to: " + role1 + ", " + role2 + ", " + role3 + ", " + role4 + ", " + role5)
         else:
             await message.channel.send("Error: Invalid Roles")
-    if message.content.lower().startswith('&signup'):
+    if message.content.lower().startswith('&signup') and not message.content.lower().startswith('&signuplist'):
         nickname = message.author.nick
         if nickname == None:
             nickname = message.author.global_name
