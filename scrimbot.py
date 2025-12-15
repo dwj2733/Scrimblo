@@ -47,6 +47,15 @@ async def ramble_loop():
             chatlen = 25
         while len(newmsg) < chatlen:
             newmsg = chatmodule.msggen(lastmsg)
+        words = newmsg.split()
+        fixed_words = []
+
+        for word in words:
+            if word.startswith(":") and not word.endswith(":"):
+                word += ":"
+            fixed_words.append(word)
+
+        newmsg = " ".join(fixed_words)
         await ramble_channel.send(newmsg)
         lastmsg = newmsg
         await asyncio.sleep(1800)
