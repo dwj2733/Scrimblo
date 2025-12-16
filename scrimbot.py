@@ -84,15 +84,14 @@ async def signup_check_loop():
                 url = f"http://scrimzone.co/signuprequests.php?date={today}&type={event}"
                 response = requests.get(url).text
                 count = int(response.split(",")[0])
+                signed_up_players = response.split(",")[1:]
 
                 group_size = 8 if event == "tft" else 10
-                start = num_signup_games * group_size - (group_size - 1)
-                end = num_signup_games * group_size + 1
 
-                if(event == 'tft'):
-                    num_signup_games = (count // group_size)
-                else:
-                    num_signup_games = (count // group_size)
+                num_signup_games = (count // group_size)
+
+                start = (num_signup_games - 1) * group_size
+                end = start + group_size
 
                 if num_signup_games >= 1 and num_signup_games > last_signups[event]:
                     channel = client.get_channel(780732404720467998)
@@ -100,9 +99,13 @@ async def signup_check_loop():
                     message_text = ""
 
                     for i in range(start, end):
-                        message_text += get_user_mention(response.split(",")[i].strip()) + " "
+                        if i >= len(signed_up_players):
+                            break
+                        mention = get_user_mention(signed_up_players[i].strip())
+                        if mention:
+                            message_text += mention + " "
 
-                    message_text += " You are the first 10 to signup for " + event  + " Scrims today! Please be in lobby at " + signup_times[event]
+                    message_text += " You are the first " + str(group_size) + " to signup for " + event  + " Scrims today! Please be in lobby at " + signup_times[event]
 
                     await channel.send(message_text)
 
