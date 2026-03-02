@@ -35,6 +35,7 @@ def update():
 
 async def ramble_loop():
     await client.wait_until_ready()
+    server = client.get_guild(767973379247833099)
     ramble_id = 1054874073659879475
     ramble_channel = client.get_channel(ramble_id)
     lastmsg = ""
@@ -45,15 +46,25 @@ async def ramble_loop():
         if random.randint(1, 3) == 1:
             lastmsg = ""
             chatlen = 25
-        while len(newmsg) < chatlen:
-            newmsg = chatmodule.msggen(lastmsg)
-        words = newmsg.split()
-        fixed_words = []
+        containsEmoji = False
+        tries = 0
+        while not containsEmoji and tries < 100:
+            while len(newmsg) < chatlen:
+                newmsg = chatmodule.msggen(lastmsg)
+            words = newmsg.split()
+            fixed_words = []
 
-        for word in words:
-            if word.startswith(":") and not word.endswith(":"):
-                word += ":"
-            fixed_words.append(word)
+            for word in words:
+                if word.startswith(":") and not word.endswith(":"):
+                    word += ":"
+                if word.startswith(":") and word.endswith(":"):
+                    emoji = discord.utils.get(server.emojis, name=word.strip(":"))
+                    if(emoji):
+                        word = f"{emoji}"
+                        containsEmoji = True
+                fixed_words.append(word)
+
+            tries += 1
 
         newmsg = " ".join(fixed_words)
         await ramble_channel.send(newmsg)
