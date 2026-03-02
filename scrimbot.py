@@ -59,6 +59,7 @@ async def ramble_loop():
                     word += ":"
                 if word.startswith(":") and word.endswith(":"):
                     emoji = discord.utils.get(server.emojis, name=word.strip(":"))
+                    print('Looking for emoji ' + word.strip(':'))
                     if(emoji):
                         word = f"{emoji}"
                         containsEmoji = True
