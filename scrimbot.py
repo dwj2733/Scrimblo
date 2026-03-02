@@ -33,43 +33,47 @@ def update():
     requests.get('http://scrimzone.co/update.php')
     print("Updated")
 
+async def send_scrimbo_msg(lastmsg):
+    server = client.get_guild(767973379247833099)
+    newmsg = chatmodule.msggen(lastmsg)
+    chatlen = random.randint(3, 15)
+    if random.randint(1, 3) == 1:
+        lastmsg = ""
+        chatlen = 25
+    containsEmoji = False
+    tries = 0
+    while (not containsEmoji) and (tries < 100):
+        newmsg = chatmodule.msggen(lastmsg)
+        while len(newmsg) < chatlen:
+            newmsg = chatmodule.msggen(lastmsg)
+        words = newmsg.split()
+        fixed_words = []
+
+        for word in words:
+            if word.startswith(":") and not word.endswith(":"):
+                word += ":"
+                print('Looking for emoji ' + word.strip(':'))
+            if word.startswith(":") and word.endswith(":"):
+                emoji = discord.utils.get(server.emojis, name=word.strip(":"))
+                print('Looking for emoji ' + word.strip(':'))
+                if(emoji):
+                    word = f"{emoji}"
+                    containsEmoji = True
+            fixed_words.append(word)
+
+        tries += 1
+
+    newmsg = " ".join(fixed_words)
+    return newmsg
+
 async def ramble_loop():
     await client.wait_until_ready()
-    server = client.get_guild(767973379247833099)
     ramble_id = 1054874073659879475
     ramble_channel = client.get_channel(ramble_id)
     lastmsg = ""
 
     while not client.is_closed():
-        newmsg = chatmodule.msggen(lastmsg)
-        chatlen = random.randint(3, 15)
-        if random.randint(1, 3) == 1:
-            lastmsg = ""
-            chatlen = 25
-        containsEmoji = False
-        tries = 0
-        while (not containsEmoji) and (tries < 100):
-            newmsg = chatmodule.msggen(lastmsg)
-            while len(newmsg) < chatlen:
-                newmsg = chatmodule.msggen(lastmsg)
-            words = newmsg.split()
-            fixed_words = []
-
-            for word in words:
-                if word.startswith(":") and not word.endswith(":"):
-                    word += ":"
-                    print('Looking for emoji ' + word.strip(':'))
-                if word.startswith(":") and word.endswith(":"):
-                    emoji = discord.utils.get(server.emojis, name=word.strip(":"))
-                    print('Looking for emoji ' + word.strip(':'))
-                    if(emoji):
-                        word = f"{emoji}"
-                        containsEmoji = True
-                fixed_words.append(word)
-
-            tries += 1
-
-        newmsg = " ".join(fixed_words)
+        newmsg = send_scrimbo_msg(lastmsg)
         await ramble_channel.send(newmsg)
         lastmsg = newmsg
         await asyncio.sleep(1800)
@@ -469,9 +473,9 @@ async def on_message(message):
         message_channel = client.get_channel(adminmsg_id)
         await message_channel.send("_ _\n" + "From: " + message.author.name + "\nMessage Content:\n" + message.content)
     if client.user.mentioned_in(message) and not isinstance(message.channel, discord.DMChannel) and (discord.utils.get(server.roles, name='Scrim Bot').members[0] != message.author):
-        await message.channel.send(chatmodule.msggen(message.content.lower() + "\n"),reference=message)
+        await message.channel.send(send_scrimbo_msg(message.content.lower() + "\n"),reference=message)
     if not isinstance(message.channel, discord.DMChannel) and (random.randint(1,100) <= 1):
-        await message.channel.send(chatmodule.msggen("\n".join(msgmem[message.channel]) + "\n"))
+        await message.channel.send(send_scrimbo_msg("\n".join(msgmem[message.channel]) + "\n"))
     print(random.randint(1,100))
 
 def get_user_mention(name):
