@@ -40,28 +40,23 @@ async def send_scrimbo_msg(lastmsg):
     if random.randint(1, 3) == 1:
         lastmsg = ""
         chatlen = 25
-    containsEmoji = False
-    tries = 0
-    while (not containsEmoji) and (tries < 100):
+        
+    while len(newmsg) < chatlen:
         newmsg = chatmodule.msggen(lastmsg)
-        while len(newmsg) < chatlen:
-            newmsg = chatmodule.msggen(lastmsg)
-        words = newmsg.split()
-        fixed_words = []
+    words = newmsg.split()
+    fixed_words = []
 
-        for word in words:
-            if word.startswith(":") and not word.endswith(":"):
-                word += ":"
-                print('Looking for emoji ' + word.strip(':'))
-            if word.startswith(":") and word.endswith(":"):
-                emoji = discord.utils.get(server.emojis, name=word.strip(":"))
-                print('Looking for emoji ' + word.strip(':'))
-                if(emoji):
-                    word = f"{emoji}"
-                    containsEmoji = True
-            fixed_words.append(word)
-
-        tries += 1
+    for word in words:
+        if word.startswith(":") and not word.endswith(":"):
+            word += ":"
+            print('Looking for emoji ' + word.strip(':'))
+        if word.startswith(":") and word.endswith(":"):
+            emoji = discord.utils.get(server.emojis, name=word.strip(":"))
+            print('Looking for emoji ' + word.strip(':'))
+            if(emoji):
+                word = f"{emoji}"
+                containsEmoji = True
+        fixed_words.append(word)
 
     newmsg = " ".join(fixed_words)
     return newmsg
