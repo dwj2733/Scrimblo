@@ -49,7 +49,7 @@ async def ramble_loop():
         containsEmoji = False
         tries = 0
         while (not containsEmoji) and (tries < 10000):
-            print(tries)
+            newmsg = chatmodule.msggen(lastmsg)
             while len(newmsg) < chatlen:
                 newmsg = chatmodule.msggen(lastmsg)
             words = newmsg.split()
