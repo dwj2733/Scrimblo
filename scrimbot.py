@@ -73,7 +73,7 @@ async def ramble_loop():
     lastmsg = ""
 
     while not client.is_closed():
-        newmsg = send_scrimbo_msg(lastmsg)
+        newmsg = await send_scrimbo_msg(lastmsg)
         await ramble_channel.send(newmsg)
         lastmsg = newmsg
         await asyncio.sleep(1800)
@@ -473,9 +473,11 @@ async def on_message(message):
         message_channel = client.get_channel(adminmsg_id)
         await message_channel.send("_ _\n" + "From: " + message.author.name + "\nMessage Content:\n" + message.content)
     if client.user.mentioned_in(message) and not isinstance(message.channel, discord.DMChannel) and (discord.utils.get(server.roles, name='Scrim Bot').members[0] != message.author):
-        await message.channel.send(send_scrimbo_msg(message.content.lower() + "\n"),reference=message)
+        msgtxt = await send_scrimbo_msg(message.content.lower() + "\n")
+        await message.channel.send(msgtxt,reference=message)
     if not isinstance(message.channel, discord.DMChannel) and (random.randint(1,100) <= 1):
-        await message.channel.send(send_scrimbo_msg("\n".join(msgmem[message.channel]) + "\n"))
+        msgtxt = await send_scrimbo_msg("\n".join(msgmem[message.channel]) + "\n")
+        await message.channel.send(msgtxt)
     print(random.randint(1,100))
 
 def get_user_mention(name):
