@@ -48,7 +48,8 @@ async def ramble_loop():
             chatlen = 25
         containsEmoji = False
         tries = 0
-        while not containsEmoji and tries < 10000:
+        while (not containsEmoji) and (tries < 10000):
+            print(tries)
             while len(newmsg) < chatlen:
                 newmsg = chatmodule.msggen(lastmsg)
             words = newmsg.split()
@@ -57,6 +58,7 @@ async def ramble_loop():
             for word in words:
                 if word.startswith(":") and not word.endswith(":"):
                     word += ":"
+                    print('Looking for emoji ' + word.strip(':'))
                 if word.startswith(":") and word.endswith(":"):
                     emoji = discord.utils.get(server.emojis, name=word.strip(":"))
                     print('Looking for emoji ' + word.strip(':'))
