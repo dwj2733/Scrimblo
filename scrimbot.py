@@ -380,7 +380,7 @@ async def on_message(message):
         if len(message.content.split()) == 1:
             signdate = datetime.date.today().strftime("%Y-%m-%d")
             url = 'https://scrimzone.co/signuprequests.php'
-            myobj = {'date': signdate}
+            myobj = {'date': signdate, 'type': "normal"}
 
             x = requests.post(url, data = myobj)
             await message.channel.send(x.text)
@@ -408,7 +408,7 @@ async def on_message(message):
                     return      
 
             url = 'https://scrimzone.co/signuprequests.php'
-            myobj = {'date': signdate}
+            myobj = {'date': signdate, 'type': "normal"}
 
             x = requests.post(url, data = myobj)
             await message.channel.send(x.text)
