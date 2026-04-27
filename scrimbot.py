@@ -30,7 +30,7 @@ def load():
         players = dict()
 
 def update():
-    requests.get('http://scrimzone.co/update.php')
+    requests.get('https://scrimzone.co/update.php')
     print("Updated")
 
 async def send_scrimbo_msg(lastmsg):
@@ -76,7 +76,7 @@ async def ramble_loop():
 async def update_loop():
     while True:
         try:
-            requests.get('http://scrimzone.co/update.php')
+            requests.get('https://scrimzone.co/update.php')
         except Exception as e:
             print("update_loop crashed:", e)
         await asyncio.sleep(300)
@@ -94,7 +94,7 @@ async def signup_check_loop():
                 last_signups = {signup_type: 0 for signup_type in signup_types}
 
             for event in signup_types:
-                url = f"http://scrimzone.co/signuprequests.php?date={today}&type={event}"
+                url = f"https://scrimzone.co/signuprequests.php?date={today}&type={event}"
                 response = requests.get(url).text
                 count = int(response.split(",")[0])
                 signed_up_players = response.split(",")[1:]
@@ -324,7 +324,7 @@ async def on_message(message):
                 role4 = 'null'
             if(role5 is None):
                 role5 = 'null'
-            url = 'http://scrimzone.co/players.php'
+            url = 'https://scrimzone.co/players.php'
             myobj = {'updateButton': True,
                     'updatePlayer': nickname,
                     'setLanes': True,
@@ -361,7 +361,7 @@ async def on_message(message):
             if len(message.content.split()) > 2:
                 signtype = message.content.split()[2].lower()
                 if signtype in signup_types:
-                    url = 'http://scrimzone.co/signuprequests.php'
+                    url = 'https://scrimzone.co/signuprequests.php'
                     myobj = {'name': nickname, 'date': signdate, 'type': signtype}
 
                     x = requests.post(url, data = myobj)
@@ -371,7 +371,7 @@ async def on_message(message):
                     await message.channel.send("ERROR: Invalid Type. Please enter one of the following: " + ', '.join(signup_types) + ".")
                     return      
 
-            url = 'http://scrimzone.co/signuprequests.php'
+            url = 'https://scrimzone.co/signuprequests.php'
             myobj = {'name': nickname, 'date': signdate}
 
             x = requests.post(url, data = myobj)
@@ -379,7 +379,7 @@ async def on_message(message):
     if message.content.lower().startswith('&signuplist'):
         if len(message.content.split()) == 1:
             signdate = datetime.date.today().strftime("%Y-%m-%d")
-            url = 'http://scrimzone.co/signuprequests.php'
+            url = 'https://scrimzone.co/signuprequests.php'
             myobj = {'date': signdate}
 
             x = requests.post(url, data = myobj)
@@ -397,7 +397,7 @@ async def on_message(message):
             if len(message.content.split()) > 2:
                 signtype = message.content.split()[2].lower()
                 if signtype in signup_types:
-                    url = 'http://scrimzone.co/signuprequests.php'
+                    url = 'https://scrimzone.co/signuprequests.php'
                     myobj = {'date': signdate, 'type': signtype}
 
                     x = requests.post(url, data = myobj)
@@ -407,7 +407,7 @@ async def on_message(message):
                     await message.channel.send("ERROR: Invalid Type. Please enter one of the following: " + ', '.join(signup_types) + ".")
                     return      
 
-            url = 'http://scrimzone.co/signuprequests.php'
+            url = 'https://scrimzone.co/signuprequests.php'
             myobj = {'date': signdate}
 
             x = requests.post(url, data = myobj)
@@ -434,7 +434,7 @@ async def on_message(message):
             if len(message.content.split()) > 2:
                 signtype = message.content.split()[2].lower()
                 if signtype in signup_types:
-                    url = 'http://scrimzone.co/signuprequests.php'
+                    url = 'https://scrimzone.co/signuprequests.php'
                     myobj = {'deleteSignup': 'd3l3t3', 'name': nickname, 'date': signdate, 'type': signtype}
 
                     x = requests.post(url, data = myobj)
@@ -444,7 +444,7 @@ async def on_message(message):
                     await message.channel.send("ERROR: Invalid Type. Please enter one of the following: " + ', '.join(signup_types) + ".")
                     return     
 
-            url = 'http://scrimzone.co/signuprequests.php'
+            url = 'https://scrimzone.co/signuprequests.php'
             myobj = {'deleteSignup': 'd3l3t3', 'name': nickname, 'date': signdate}
 
             x = requests.post(url, data = myobj)
@@ -457,7 +457,7 @@ async def on_message(message):
             if welcomemention != 0:
                 signup_channel = client.get_channel(780732404720467998)
                 info_channel = client.get_channel(768195174014124033)
-                await gen_channel.send("Welcome " + welcomemention + "! You have been registered to the website and can now use the " + signup_channel.mention + " and " + info_channel.mention + " channels. Please reach out to any admin (orange names) or DM " + discord.utils.get(server.roles, name='Scrim Bot').members[0].mention + " if you have any questions! Also be sure to familiarize yourself with the ⁠rules and the website: http://scrimzone.co/")
+                await gen_channel.send("Welcome " + welcomemention + "! You have been registered to the website and can now use the " + signup_channel.mention + " and " + info_channel.mention + " channels. Please reach out to any admin (orange names) or DM " + discord.utils.get(server.roles, name='Scrim Bot').members[0].mention + " if you have any questions! Also be sure to familiarize yourself with the ⁠rules and the website: https://scrimzone.co/")
             else:
                 await message.channel.send("ERROR: Registered user " + " ".join(message.content.split()[1:]) + " does not exist.")
         else:
@@ -491,7 +491,7 @@ gen_id = 770146648177115137
 #    today = datetime.date.today()
 #    postdate = today + datetime.timedelta(days=0)
 #    signup_channel = client.get_channel(signup_id)
-#    await signup_channel.send(getday(0) + " " + "(" + postdate.strftime("%m/%d") + "): " + "http://www.scrimzone.co/signups.php?date=" + postdate.strftime("%Y-%m-%d") + "&name=")
+#    await signup_channel.send(getday(0) + " " + "(" + postdate.strftime("%m/%d") + "): " + "https://www.scrimzone.co/signups.php?date=" + postdate.strftime("%Y-%m-%d") + "&name=")
 #    await unrole()
 
 
