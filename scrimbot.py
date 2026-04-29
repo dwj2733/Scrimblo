@@ -464,18 +464,18 @@ async def on_message(message):
             await message.channel.send("ERROR: Command Missing User")
 
     if message.content.lower().startswith('&spectate'):
-    server = client.get_guild(767973379247833099)
+      server = client.get_guild(767973379247833099)
     
-    # Get the Spectators role
-    spectator_role = discord.utils.get(server.roles, name='Spectators')
+      # Get the Spectators role
+      spectator_role = discord.utils.get(server.roles, name='Spectators')
     
-    if spectator_role is None:
+      if spectator_role is None:
         await message.channel.send("Error: Spectators role not found.")
         return
 
-    # Add role to user
-    await message.author.add_roles(spectator_role)
-    await message.channel.send(f"{message.author.mention} is now a spectator.")
+      # Add role to user
+      await message.author.add_roles(spectator_role)
+      await message.channel.send(f"{message.author.mention} is now a spectator.")
       
     if isinstance(message.channel, discord.DMChannel):
         await message.channel.send("Thank you, your message has been recieved. We have notified the Admins, and one of them will be in contact with you shortly.")
