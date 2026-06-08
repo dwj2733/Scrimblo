@@ -120,6 +120,12 @@ async def signup_check_loop():
 
                     message_text += " You are the first " + str(group_size) + " to signup for " + event  + " Scrims today! Please be in lobby at " + signup_times[event]
 
+                    if(event not in ["Silly", "TFT"]):
+                        server = client.get_guild(767973379247833099)
+                        message_text += ("\n\nPlease keep in mind that signups should be taken seriously as they are crucial for balanced games in the server. " 
+                                       "Each game should be played with the intent to win, as such playing while intoxicated is not allowed. "
+                                       "If any player on your team is failing to meet these expectations, please let us know via a message to " + discord.utils.get(server.roles, name='Scrim Bot').members[0].mention + ".")
+
                     await channel.send(message_text)
 
                     last_signups[event] = num_signup_games
