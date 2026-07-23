@@ -3,6 +3,7 @@ from datetime import timedelta
 import pyttsx3
 from discord.ext import commands
 from discord.utils import get
+from zoneinfo import ZoneInfo
 
 intents = discord.Intents.default()
 intents.members = True  # Subscribe to the privileged members intent.
@@ -13,8 +14,11 @@ signup_times = {"normal": "7:55pm Eastern",
                 "late": "10:55 Eastern",
                 "tft": "8:55 Eastern",
                 "silly": "7:55pm Eastern"}
-last_day = datetime.datetime.now().strftime("%Y-%m-%d")
+last_day = datetime.datetime.now(ZoneInfo("America/New_York")).strftime("%Y-%m-%d")
 players = dict()
+
+def get_eastern_date():
+    return datetime.datetime.now(ZoneInfo("America/New_York")).date()
 
 def save():
     global players
@@ -88,7 +92,7 @@ async def signup_check_loop():
 
     while not client.is_closed():
         try:
-            today = datetime.datetime.now().strftime("%Y-%m-%d")
+            today = datetime.datetime.now(ZoneInfo("America/New_York")).strftime("%Y-%m-%d")
             if(today != last_day):
                 last_day = today
                 last_signups = {signup_type: 0 for signup_type in signup_types}
@@ -140,7 +144,7 @@ async def unrole_loop():
         await asyncio.sleep(86400)
 
 async def wait_until(hour: int, minute: int = 0, second: int = 0):
-    now = datetime.datetime.now()
+    now = datetime.datetime.now(ZoneInfo("America/New_York"))
     target = now.replace(hour=hour, minute=minute, second=second, microsecond=0)
 
     # If target time already passed today, schedule for tomorrow
@@ -161,8 +165,8 @@ def within24h(day):
                 "friday":"saturday",
                 "saturday":"sunday",
                 "sunday":"monday"}
-        today = weekdays[datetime.date.today().weekday()]
-        now = datetime.datetime.now()
+        today = weekdays[get_eastern_date().weekday()]
+        now = datetime.datetime.now(ZoneInfo("America/New_York"))
         if (day == days[today] and now.hour >= 20) or day == today:
             return True
         else:
@@ -172,16 +176,16 @@ def within24h(day):
 
 def getday(delta=0):
     weekdays = ["Monday","Tuesday","Wednesday","Thursday","Friday","Saturday","Sunday"]
-    return weekdays[(datetime.date.today() + datetime.timedelta(days=delta)).weekday()]
+    return weekdays[(get_eastern_date() + datetime.timedelta(days=delta)).weekday()]
 
 def daysuntil(targetday):
     targetday = targetday.lower()
     weekdays = ["monday","tuesday","wednesday","thursday","friday","saturday","sunday"]
     dt = 0
-    checkday = weekdays[(datetime.date.today() + datetime.timedelta(days=dt)).weekday()]
+    checkday = weekdays[(get_eastern_date() + datetime.timedelta(days=dt)).weekday()]
     while targetday != checkday and dt < 9:
         dt += 1
-        checkday = weekdays[(datetime.date.today() + datetime.timedelta(days=dt)).weekday()]
+        checkday = weekdays[(get_eastern_date() + datetime.timedelta(days=dt)).weekday()]
     if dt > 7:
         return -1
     else:
@@ -196,7 +200,7 @@ def gettomorrow():
                 "friday":"saturday",
                 "saturday":"sunday",
                 "sunday":"monday"}
-    return days[weekdays[datetime.date.today().weekday()]]
+    return days[weekdays[get_eastern_date().weekday()]]
 
 load()
 
@@ -356,11 +360,11 @@ async def on_message(message):
             await message.channel.send("ERROR: Invalid day. Please enter today/tomorrow or weekday name.")
         else:
             if message.content.split()[1].lower() == "today":
-                signdate = datetime.date.today().strftime("%Y-%m-%d")
+                signdate = get_eastern_date().strftime("%Y-%m-%d")
             elif message.content.split()[1].lower() == "tomorrow":
-                signdate = (datetime.date.today() + datetime.timedelta(days=1)).strftime("%Y-%m-%d")
+                signdate = (get_eastern_date() + datetime.timedelta(days=1)).strftime("%Y-%m-%d")
             elif message.content.split()[1].lower() in ["monday","tuesday","wednesday","thursday","friday","saturday","sunday"]:
-                signdate = (datetime.date.today() + datetime.timedelta(days=daysuntil(message.content.split()[1].lower()))).strftime("%Y-%m-%d")
+                signdate = (get_eastern_date() + datetime.timedelta(days=daysuntil(message.content.split()[1].lower()))).strftime("%Y-%m-%d")
             else:
                 await message.channel.send("ERROR: Invalid day. Please enter today/tomorrow or weekday name.")
                 return
@@ -384,7 +388,7 @@ async def on_message(message):
             await message.channel.send("Signed up " + nickname + " for " + signdate + ".")
     if message.content.lower().startswith('&signuplist'):
         if len(message.content.split()) == 1:
-            signdate = datetime.date.today().strftime("%Y-%m-%d")
+            signdate = get_eastern_date().strftime("%Y-%m-%d")
             url = 'https://scrimzone.co/signuprequests.php'
             myobj = {'date': signdate, 'type': "normal"}
 
@@ -392,11 +396,11 @@ async def on_message(message):
             await message.channel.send(x.text)
         else:
             if message.content.split()[1].lower() == "today":
-                signdate = datetime.date.today().strftime("%Y-%m-%d")
+                signdate = get_eastern_date().strftime("%Y-%m-%d")
             elif message.content.split()[1].lower() == "tomorrow":
-                signdate = (datetime.date.today() + datetime.timedelta(days=1)).strftime("%Y-%m-%d")
+                signdate = (get_eastern_date() + datetime.timedelta(days=1)).strftime("%Y-%m-%d")
             elif message.content.split()[1].lower() in ["monday","tuesday","wednesday","thursday","friday","saturday","sunday"]:
-                signdate = (datetime.date.today() + datetime.timedelta(days=daysuntil(message.content.split()[1].lower()))).strftime("%Y-%m-%d")
+                signdate = (get_eastern_date() + datetime.timedelta(days=daysuntil(message.content.split()[1].lower()))).strftime("%Y-%m-%d")
             else:
                 await message.channel.send("ERROR: Invalid day. Please enter today/tomorrow or weekday name.")
                 return
@@ -429,11 +433,11 @@ async def on_message(message):
             await message.channel.send("ERROR: Invalid day. Please enter today/tomorrow or weekday name.")
         else:
             if message.content.split()[1].lower() == "today":
-                signdate = datetime.date.today().strftime("%Y-%m-%d")
+                signdate = get_eastern_date().strftime("%Y-%m-%d")
             elif message.content.split()[1].lower() == "tomorrow":
-                signdate = (datetime.date.today() + datetime.timedelta(days=1)).strftime("%Y-%m-%d")
+                signdate = (get_eastern_date() + datetime.timedelta(days=1)).strftime("%Y-%m-%d")
             elif message.content.split()[1].lower() in ["monday","tuesday","wednesday","thursday","friday","saturday","sunday"]:
-                signdate = (datetime.date.today() + datetime.timedelta(days=daysuntil(message.content.split()[1].lower()))).strftime("%Y-%m-%d")
+                signdate = (get_eastern_date() + datetime.timedelta(days=daysuntil(message.content.split()[1].lower()))).strftime("%Y-%m-%d")
             else:
                 await message.channel.send("ERROR: Invalid day. Please enter today/tomorrow or weekday name.")
                 return
