@@ -1,6 +1,6 @@
 import discord, asyncio, pickle, time, os, csv, json, random, chatmodule, requests, mysecrets, schedule, requests, datetime
 from datetime import timedelta
-import pyttsx3
+#import pyttsx3
 from discord.ext import commands
 from discord.utils import get
 from zoneinfo import ZoneInfo
