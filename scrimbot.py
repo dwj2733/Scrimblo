@@ -16,6 +16,7 @@ signup_times = {"normal": "7:55pm Eastern",
                 "silly": "7:55pm Eastern"}
 last_day = datetime.datetime.now(ZoneInfo("America/New_York")).strftime("%Y-%m-%d")
 players = dict()
+checked_in = set()
 
 def get_eastern_date():
     return datetime.datetime.now(ZoneInfo("America/New_York")).date()
@@ -96,6 +97,7 @@ async def signup_check_loop():
             if(today != last_day):
                 last_day = today
                 last_signups = {signup_type: 0 for signup_type in signup_types}
+                checked_in = set()
 
             for event in signup_types:
                 url = f"https://scrimzone.co/signuprequests.php?date={today}&type={event}"
@@ -213,6 +215,33 @@ async def on_ready():
     asyncio.create_task(update_loop())
     asyncio.create_task(signup_check_loop())
     asyncio.create_task(unrole_loop())
+
+
+async def format_signuplist(signdate, signtype, guild):
+    url = f"https://scrimzone.co/signuprequests.php?date={signdate}&type={signtype}"
+    response = requests.get(url).text
+    parts = response.split(",")
+    players_raw = [p.strip() for p in parts[1:] if p.strip()]
+
+    lobby_channel = guild.get_channel(768004380729278474)
+    in_lobby = set()
+    if lobby_channel:
+        for member in lobby_channel.members:
+            nick = member.nick or member.global_name
+            if nick and nick.find("(") != -1:
+                nick = nick[nick.find("(") + 1:nick.find(")")]
+            if nick:
+                in_lobby.add(nick)
+
+    output = parts[0]  # preserve original count/header text
+    for p in players_raw:
+        if p in checked_in or p in in_lobby:
+            output += f",✅{p}"
+        else:
+            output += f",❌{p}"
+
+    return output
+        
 
 async def unrole():
     server = client.get_guild(767973379247833099)
@@ -386,14 +415,15 @@ async def on_message(message):
 
             x = requests.post(url, data = myobj)
             await message.channel.send("Signed up " + nickname + " for " + signdate + ".")
+
+    if message.content.lower().startswith('&signuplate'):
+        await message.channel.send("You typed `&signuplate`. Did you mean `&signup [day] late`?")
+
     if message.content.lower().startswith('&signuplist'):
         if len(message.content.split()) == 1:
             signdate = get_eastern_date().strftime("%Y-%m-%d")
-            url = 'https://scrimzone.co/signuprequests.php'
-            myobj = {'date': signdate, 'type': "normal"}
-
-            x = requests.post(url, data = myobj)
-            await message.channel.send(x.text)
+            output = await format_signuplist(signdate, "normal", server)
+            await message.channel.send(output)
         else:
             if message.content.split()[1].lower() == "today":
                 signdate = get_eastern_date().strftime("%Y-%m-%d")
@@ -407,21 +437,15 @@ async def on_message(message):
             if len(message.content.split()) > 2:
                 signtype = message.content.split()[2].lower()
                 if signtype in signup_types:
-                    url = 'https://scrimzone.co/signuprequests.php'
-                    myobj = {'date': signdate, 'type': signtype}
-
-                    x = requests.post(url, data = myobj)
-                    await message.channel.send(x.text)
-                    return 
+                    output = await format_signuplist(signdate, signtype, server)
+                    await message.channel.send(output)
+                    return
                 else:
                     await message.channel.send("ERROR: Invalid Type. Please enter one of the following: " + ', '.join(signup_types) + ".")
-                    return      
+                    return
 
-            url = 'https://scrimzone.co/signuprequests.php'
-            myobj = {'date': signdate, 'type': "normal"}
-
-            x = requests.post(url, data = myobj)
-            await message.channel.send(x.text)
+            output = await format_signuplist(signdate, "normal", server)
+            await message.channel.send(output)
     if message.content.lower().startswith('&unsignup'):
         nickname = message.author.nick
         if nickname == None:
@@ -486,7 +510,48 @@ async def on_message(message):
       # Add role to user
       await message.author.add_roles(spectator_role)
       await message.channel.send(f"{message.author.mention} is now a spectator.")
-      
+
+    if message.content.lower().startswith('&checkin'):
+        nickname = message.author.nick
+        if nickname == None:
+            nickname = message.author.global_name
+
+        if nickname.find("(") != -1:
+            nickname = nickname[nickname.find("(") + 1:nickname.find(")")]
+
+        signdate = get_eastern_date().strftime("%Y-%m-%d")
+        found = False
+        for signtype in signup_types:
+            url = f"https://scrimzone.co/signuprequests.php?date={signdate}&type={signtype}"
+            response = requests.get(url).text
+            signed_up_players = [p.strip() for p in response.split(",")[1:]]
+            if nickname in signed_up_players:
+                found = True
+                break
+
+        if found:
+            checked_in.add(nickname)
+            await message.channel.send(f"{nickname} has checked in for {signdate}.")
+        else:
+            await message.channel.send(f"{nickname} is not signed up for any scrims on {signdate}. Please sign up first.")
+
+    if message.content.lower().startswith('&unspectate'):
+      server = client.get_guild(767973379247833099)
+    
+      # Get the Spectators role
+      spectator_role = discord.utils.get(server.roles, name='Spectators')
+    
+      if spectator_role is None:
+        await message.channel.send("Error: Spectators role not found.")
+        return
+
+      if message.author.voice:
+        await message.author.move_to(None)
+
+      # Remove role from user
+      await message.author.remove_roles(spectator_role)
+      await message.channel.send(f"{message.author.mention} is no longer a spectator.")
+    
     if isinstance(message.channel, discord.DMChannel):
         await message.channel.send("Thank you, your message has been recieved. We have notified the Admins, and one of them will be in contact with you shortly.")
         adminmsg_id = 1044788321009807421
