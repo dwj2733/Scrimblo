@@ -470,7 +470,7 @@ async def on_message(message):
             x = requests.post(url, data=myobj)
             output = x.text
 
-    await message.channel.send(output)
+        await message.channel.send(output)
     if message.content.lower().startswith('&unsignup'):
         nickname = message.author.nick
         if nickname == None:
