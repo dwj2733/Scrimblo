@@ -435,6 +435,10 @@ async def on_message(message):
             signdate = get_eastern_date().strftime("%Y-%m-%d")
             signtype = "normal"
             show_missing = False
+        elif parts[1].lower() == "missing":
+            signdate = get_eastern_date().strftime("%Y-%m-%d")
+            signtype = "normal"
+            show_missing = True
         else:
             if parts[1].lower() == "today":
                 signdate = get_eastern_date().strftime("%Y-%m-%d")
