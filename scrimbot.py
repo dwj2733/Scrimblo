@@ -16,7 +16,7 @@ signup_times = {"normal": "7:55pm Eastern",
                 "silly": "7:55pm Eastern"}
 last_day = datetime.datetime.now(ZoneInfo("America/New_York")).strftime("%Y-%m-%d")
 players = dict()
-checked_in = set()
+checked_in = {signup_type: set() for signup_type in signup_types}
 
 def get_eastern_date():
     return datetime.datetime.now(ZoneInfo("America/New_York")).date()
@@ -89,15 +89,15 @@ async def update_loop():
 async def signup_check_loop():
     await client.wait_until_ready()
 
-    global last_day, last_signups
+    global last_day, last_signups, checked_in
 
     while not client.is_closed():
         try:
             today = datetime.datetime.now(ZoneInfo("America/New_York")).strftime("%Y-%m-%d")
-            if(today != last_day):
+            if today != last_day:
                 last_day = today
                 last_signups = {signup_type: 0 for signup_type in signup_types}
-                checked_in = set()
+                checked_in = {signup_type: set() for signup_type in signup_types}
 
             for event in signup_types:
                 url = f"https://scrimzone.co/signuprequests.php?date={today}&type={event}"
@@ -223,6 +223,20 @@ async def format_signuplist(signdate, signtype, guild):
     parts = response.split(",")
     players_raw = [p.strip() for p in parts[1:] if p.strip()]
 
+    in_lobby = get_lobby_members(guild)
+
+    ready = [p for p in players_raw if p in checked_in[signtype] or p in in_lobby]
+    missing = [p for p in players_raw if p not in checked_in[signtype] and p not in in_lobby]
+
+    output = parts[0]
+    if ready:
+        output += "\nReady: " + ", ".join(ready)
+    if missing:
+        output += "\nMissing: " + ", ".join(missing)
+
+    return output
+
+def get_lobby_members(guild):
     lobby_channel = guild.get_channel(768004380729278474)
     in_lobby = set()
     if lobby_channel:
@@ -232,18 +246,12 @@ async def format_signuplist(signdate, signtype, guild):
                 nick = nick[nick.find("(") + 1:nick.find(")")]
             if nick:
                 in_lobby.add(nick)
-
-    output = parts[0]  # preserve original count/header text
-    for p in players_raw:
-        if p in checked_in or p in in_lobby:
-            output += f",✅{p}"
-        else:
-            output += f",❌{p}"
-
-    return output
-        
+    return in_lobby
 
 async def unrole():
+    global checked_in
+    checked_in = {signup_type: set() for signup_type in signup_types}
+
     server = client.get_guild(767973379247833099)
     print(server)
     green = discord.utils.get(server.roles, name='Green Team')
@@ -275,6 +283,7 @@ async def on_message(message):
     global msgmem
     #global tts
     global currentcall
+    global checked_in
     if message.channel in msgmem:
         if not message.content.lower().startswith('&'):
             msgmem[message.channel].append(message.content.lower())
@@ -418,6 +427,7 @@ async def on_message(message):
 
     if message.content.lower().startswith('&signuplate'):
         await message.channel.send("You typed `&signuplate`. Did you mean `&signup [day] late`?")
+        return
 
     if message.content.lower().startswith('&signuplist'):
         if len(message.content.split()) == 1:
@@ -484,6 +494,8 @@ async def on_message(message):
             x = requests.post(url, data = myobj)
             await message.channel.send("Removed signup of " + nickname + " for " + signdate + ".")
 
+
+
     if message.content.lower().startswith('&welcome') and (message.author in discord.utils.get(server.roles, name='Admins').members):
         if len(message.content.split()) > 1:
             gen_channel = client.get_channel(gen_id)
@@ -512,28 +524,95 @@ async def on_message(message):
       await message.channel.send(f"{message.author.mention} is now a spectator.")
 
     if message.content.lower().startswith('&checkin'):
+        parts = message.content.split()
         nickname = message.author.nick
-        if nickname == None:
+        if nickname is None:
             nickname = message.author.global_name
-
         if nickname.find("(") != -1:
             nickname = nickname[nickname.find("(") + 1:nickname.find(")")]
 
         signdate = get_eastern_date().strftime("%Y-%m-%d")
-        found = False
-        for signtype in signup_types:
+
+        if len(parts) > 1:
+            signtype = parts[1].lower()
+            if signtype not in signup_types:
+                await message.channel.send("ERROR: Invalid type. Please enter one of the following: " + ', '.join(signup_types) + ".")
+                return
             url = f"https://scrimzone.co/signuprequests.php?date={signdate}&type={signtype}"
             response = requests.get(url).text
             signed_up_players = [p.strip() for p in response.split(",")[1:]]
             if nickname in signed_up_players:
-                found = True
+                checked_in[signtype].add(nickname)
+                await message.channel.send(f"{nickname} has been checked in for {signtype}!")
+            else:
+                await message.channel.send(f"{nickname} is not signed up for {signtype} today.")
+        else:
+            found_types = []
+            for signtype in signup_types:
+                url = f"https://scrimzone.co/signuprequests.php?date={signdate}&type={signtype}"
+                response = requests.get(url).text
+                signed_up_players = [p.strip() for p in response.split(",")[1:]]
+                if nickname in signed_up_players:
+                    found_types.append(signtype)
+                    checked_in[signtype].add(nickname)
+
+            if found_types:
+                await message.channel.send(f"{nickname} has been checked in for {', '.join(found_types)}!")
+            else:
+                await message.channel.send(f"{nickname} is not signed up for today.")
+
+    if message.content.lower().startswith('&checkout'):
+        nickname = message.author.nick
+        if nickname is None:
+            nickname = message.author.global_name
+        if nickname.find("(") != -1:
+            nickname = nickname[nickname.find("(") + 1:nickname.find(")")]
+
+        removed = False
+        for signtype in signup_types:
+            if nickname in checked_in[signtype]:
+                checked_in[signtype].discard(nickname)
+                removed = True
+                await message.channel.send(f"{nickname} has been checked out of {signtype}.")
                 break
 
-        if found:
-            checked_in.add(nickname)
-            await message.channel.send(f"{nickname} has checked in for {signdate}.")
+        if not removed:
+            await message.channel.send(f"{nickname} is not currently checked in.")
+
+    if message.content.lower().startswith('&pingmissing'):
+        admin_role = discord.utils.get(server.roles, id=793182421470281791)
+        if message.author not in admin_role.members:
+            return
+
+        if len(message.content.split()) > 1:
+            signtype = message.content.split()[1].lower()
+            if signtype not in signup_types:
+                await message.channel.send("ERROR: Invalid type. Please enter one of the following: " + ', '.join(signup_types) + ".")
+                return
         else:
-            await message.channel.send(f"{nickname} is not signed up for any scrims on {signdate}. Please sign up first.")
+            signtype = "normal"
+
+        signdate = get_eastern_date().strftime("%Y-%m-%d")
+        url = f"https://scrimzone.co/signuprequests.php?date={signdate}&type={signtype}"
+        response = requests.get(url).text
+        parts = response.split(",")
+        players_raw = [p.strip() for p in parts[1:] if p.strip()]
+
+        in_lobby = get_lobby_members(server)
+
+        group_size = 8 if signtype == "tft" else 10
+        num_full_groups = len(players_raw) // group_size
+        players_in_scope = players_raw[:num_full_groups * group_size]
+
+        missing = [p for p in players_in_scope if p not in checked_in[signtype] and p not in in_lobby]
+
+        signup_channel = client.get_channel(780732404720467998)
+        if not missing:
+            await signup_channel.send("Everyone in the current groups is present!")
+            return
+
+        mentions = [get_user_mention(p) for p in missing]
+        await signup_channel.send("The following players are not yet present: " + " ".join(mentions))
 
     if message.content.lower().startswith('&unspectate'):
       server = client.get_guild(767973379247833099)
@@ -571,6 +650,8 @@ def get_user_mention(name):
         if w.nick == name:
             return w.mention
     return name
+
+
 
 announce_id = 767973462978985995
 cancel_id = 780732404720467998
