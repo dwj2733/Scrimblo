@@ -430,32 +430,47 @@ async def on_message(message):
         return
 
     if message.content.lower().startswith('&signuplist'):
-        if len(message.content.split()) == 1:
+        parts = message.content.split()
+        if len(parts) == 1:
             signdate = get_eastern_date().strftime("%Y-%m-%d")
-            output = await format_signuplist(signdate, "normal", server)
-            await message.channel.send(output)
+            signtype = "normal"
+            show_missing = False
         else:
-            if message.content.split()[1].lower() == "today":
+            if parts[1].lower() == "today":
                 signdate = get_eastern_date().strftime("%Y-%m-%d")
-            elif message.content.split()[1].lower() == "tomorrow":
+            elif parts[1].lower() == "tomorrow":
                 signdate = (get_eastern_date() + datetime.timedelta(days=1)).strftime("%Y-%m-%d")
-            elif message.content.split()[1].lower() in ["monday","tuesday","wednesday","thursday","friday","saturday","sunday"]:
-                signdate = (get_eastern_date() + datetime.timedelta(days=daysuntil(message.content.split()[1].lower()))).strftime("%Y-%m-%d")
+            elif parts[1].lower() in ["monday","tuesday","wednesday","thursday","friday","saturday","sunday"]:
+                signdate = (get_eastern_date() + datetime.timedelta(days=daysuntil(parts[1].lower()))).strftime("%Y-%m-%d")
             else:
                 await message.channel.send("ERROR: Invalid day. Please enter today/tomorrow or weekday name.")
                 return
-            if len(message.content.split()) > 2:
-                signtype = message.content.split()[2].lower()
-                if signtype in signup_types:
-                    output = await format_signuplist(signdate, signtype, server)
-                    await message.channel.send(output)
-                    return
+
+            signtype = "normal"
+            show_missing = False
+
+            if len(parts) > 2:
+                if parts[2].lower() in signup_types:
+                    signtype = parts[2].lower()
+                elif parts[2].lower() == "missing":
+                    show_missing = True
                 else:
-                    await message.channel.send("ERROR: Invalid Type. Please enter one of the following: " + ', '.join(signup_types) + ".")
+                    await message.channel.send("ERROR: Invalid type. Please enter one of the following: " + ', '.join(signup_types) + ".")
                     return
 
-            output = await format_signuplist(signdate, "normal", server)
-            await message.channel.send(output)
+            if len(parts) > 3:
+                if parts[3].lower() == "missing":
+                    show_missing = True
+
+        if show_missing:
+            output = await format_signuplist(signdate, signtype, server)
+        else:
+            url = 'https://scrimzone.co/signuprequests.php'
+            myobj = {'date': signdate, 'type': signtype}
+            x = requests.post(url, data=myobj)
+            output = x.text
+
+    await message.channel.send(output)
     if message.content.lower().startswith('&unsignup'):
         nickname = message.author.nick
         if nickname == None:
